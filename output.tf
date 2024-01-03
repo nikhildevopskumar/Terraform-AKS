@@ -5,6 +5,7 @@ output "resource_group_name" {
 output "client_id" {
   description = "The application id of AzureAD application created."
   value       = module.ServicePrincipal.client_id
+  sensitive = true
 }
 
 output "client_secret" {
