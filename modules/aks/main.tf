@@ -6,13 +6,13 @@ data "azurerm_kubernetes_service_versions" "current" {
  
 
 resource "azurerm_kubernetes_cluster" "aks-cluster" {
-  name                  = "techtutorialwithpiyush-aks-cluster"
+  name                  = "andrei-aks-cluster"
   location              = var.location
   resource_group_name   = var.resource_group_name
   dns_prefix            = "${var.resource_group_name}-cluster"           
   kubernetes_version    =  data.azurerm_kubernetes_service_versions.current.latest_version
   node_resource_group = "${var.resource_group_name}-nrg"
-  
+   
   default_node_pool {
     name       = "defaultpool"
     vm_size    = "Standard_DS2_v2"
@@ -40,7 +40,6 @@ resource "azurerm_kubernetes_cluster" "aks-cluster" {
   }
 
 
-
   linux_profile {
     admin_username = "ubuntu"
     ssh_key {
@@ -52,8 +51,8 @@ resource "azurerm_kubernetes_cluster" "aks-cluster" {
       network_plugin = "azure"
       load_balancer_sku = "standard"
   }
-
-    
+  
+ 
   }
 
 

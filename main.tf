@@ -20,7 +20,7 @@ module "ServicePrincipal" {
 
 resource "azurerm_role_assignment" "rolespn" {
 
-  scope                = "/subscriptions/5f5470df-f806-47ee-8f78-6520f817df59"
+  scope                = "/subscriptions/4dc27c3b-60eb-4010-84f2-51d79521a6af"
   role_definition_name = "Contributor"
   principal_id         = module.ServicePrincipal.service_principal_object_id
 
@@ -69,8 +69,8 @@ module "aks" {
 }
 
 resource "local_file" "kubeconfig" {
-  depends_on   = [module.aks]
-  filename     = "./kubeconfig"
-  content      = module.aks.config
-  
+  depends_on = [module.aks]
+  filename   = "./kubeconfig"
+  content    = module.aks.config
+
 }
