@@ -1,0 +1,89 @@
+# Local exec to set kubectl context
+resource "null_resource" "kubeconfig" {
+  provisioner "local-exec" {
+    command = <<EOT
+    echo '${azurerm_kubernetes_cluster.aks-cluster.kube_config_raw}' > ./kubeconfig
+    EOT
+  }
+}
+
+# Helm provider for ArgoCD, Prometheus, and Grafana
+provider "helm" {
+  kubernetes {
+    config_path = "${path.module}/kubeconfig"
+  }
+}
+
+# ArgoCD Namespace
+resource "kubernetes_namespace" "argocd" {
+  metadata {
+    name = "argocd"
+  }
+}
+
+# Prometheus Namespace
+resource "kubernetes_namespace" "prometheus" {
+  metadata {
+    name = "prometheus"
+  }
+}
+
+# Grafana Namespace
+resource "kubernetes_namespace" "grafana" {
+  metadata {
+    name = "grafana"
+  }
+}
+
+# ArgoCD Helm Chart
+resource "helm_release" "argocd" {
+  name       = "argocd"
+  namespace  = kubernetes_namespace.argocd.metadata[0].name
+  chart      = "argo-cd"
+  repository = "https://argoproj.github.io/argo-helm"
+  version    = "3.32.4" # Use the latest stable version
+
+  set {
+    name  = "server.service.type"
+    value = "LoadBalancer"
+  }
+
+  depends_on = [kubernetes_namespace.argocd]
+}
+
+# Prometheus Helm Chart
+resource "helm_release" "prometheus" {
+  name       = "prometheus"
+  namespace  = kubernetes_namespace.prometheus.metadata[0].name
+  chart      = "prometheus"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  version    = "15.0.0" # Use the latest stable version
+
+  set {
+    name  = "server.service.type"
+    value = "LoadBalancer"
+  }
+
+  depends_on = [kubernetes_namespace.prometheus]
+}
+
+# Grafana Helm Chart
+resource "helm_release" "grafana" {
+  name       = "grafana"
+  namespace  = kubernetes_namespace.grafana.metadata[0].name
+  chart      = "grafana"
+  repository = "https://grafana.github.io/helm-charts"
+  version    = "6.35.6" # Use the latest stable version
+
+  set {
+    name  = "service.type"
+    value = "LoadBalancer"
+  }
+
+  set {
+    name  = "adminPassword"
+    value = "SuperSecret123!"
+  }
+
+  depends_on = [kubernetes_namespace.grafana]
+}
